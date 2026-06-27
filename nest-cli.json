@@ -1,0 +1,21 @@
+{
+	"collection": "@nestjs/schematics",
+	"sourceRoot": "src",
+	"compilerOptions": {
+		"builder": {
+			"type": "swc",
+			"options": {
+				"swcrcPath": ".swcrc"
+			}
+		},
+		"typeCheck": true,
+		"watchAssets": true,
+		"tsConfigPath": "tsconfig.build.json",
+		"assets": [
+			{
+				"include": "../assets/templates",
+				"watchAssets": false
+			}
+		]
+	}
+}

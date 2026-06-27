@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  projects    Project[]
+  createdAt   DateTime     @default(now()) @map("created_at")
+  adminAudits AdminAudit[]
+
+  @@map("admins")
+}
+
+model Project {
+  id                  String               @id @default(cuid())
+  name                String               @unique
+  isActive            Boolean              @default(true) @map("is_active")
+  testApiKeyHash      String               @unique @map("test_api_key_hash")
+  testApiKeyPrefix    String               @unique @map("test_api_key_prefix")
+  liveApiKeyHash      String               @unique @map("live_api_key_hash")
+  liveApiKeyPrefix    String               @unique @map("live_api_key_prefix")
+  webhookUrl          String               @map("webhook_url")
+  credentials         ProviderCredential[]
+  transactions        Transaction[]
+  webhookEvents       WebhookEvent[]
+  admin               Admin                @relation(fields: [adminId], references: [id])
+  adminId             String
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime?            @updatedAt @map("updated_at")
+  webhookDeliveryLogs WebhookDeliveryLog[]
+
+  @@index([name])
+  @@map("projects")
+}
+
+model ProviderCredential {
+  id                   String    @id @default(cuid())
+  provider             String // AbacatePay, Stripe, PayPal, etc.
+  // Encrypted JSON string containing credentials (IV + AuthTag + Ciphertext)
+  // String format: iv:content:tag
+  encryptedCredentials String    @map("encrypted_credentials")
+  isProduction         Boolean   @default(false) @map("is_production")
+  priority             Int       @default(0) // 1 = highest priority
+  project              Project   @relation(fields: [projectId], references: [id])
+  projectId            String
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime? @updatedAt @map("updated_at")
+
+  @@unique([projectId, provider, isProduction])
+  @@map("provider_credentials")
+}
+
+model Transaction {
+  id                  String               @id @default(cuid())
+  idempotencyKey      String               @unique @map("idempotency_key")
+  externalId          String               @map("external_id")
+  externalStatus      String               @map("external_status")
+  amountInCents       BigInt               @map("amount_in_cents")
+  currency            String               @default("BRL") // ISO 4217 
+  paymentMethod       String               @map("payment_method") // Pix, Credit Card, Boleto, Wire Transfer
+  paymentUrl          String               @map("payment_url")
+  provider            String // AbacatePay, Stripe, PayPal, etc.
+  status              String // Pending, Paid, Failed, Canceled, Refunded, Processing
+  customerEmail       String               @map("customer_email")
+  customerTaxId       String               @map("customer_tax_id") // CPF, CNPJ, SSN, etc.
+  paymentData         Json?                @map("payment_data") // Additional payment data as JSON
+  project             Project              @relation(fields: [projectId], references: [id])
+  projectId           String
+  webhookDeliveryLogs WebhookDeliveryLog[]
+  history             TransactionHistory[]
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime?            @updatedAt @map("updated_at")
+
+  @@unique([projectId, idempotencyKey])
+  @@index([externalId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model TransactionHistory {
+  id            String      @id @default(cuid())
+  transactionId String      @map("transaction_id")
+  fromStatus    String      @map("from_status")
+  toStatus      String      @map("to_status")
+  rawStatus     String?     @map("raw_status") // Raw gateway status (ex: "RECEIVED")
+  trigger       String // "WEBHOOK", "API", "MANUAL"
+  triggerId     String?     @map("trigger_id") // WebhookEvent id or admin id
+  metadata      Json?
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([transactionId])
+  @@index([createdAt])
+  @@map("transaction_history")
+}
+
+model WebhookEvent {
+  id              String    @id @default(cuid())
+  provider        String // AbacatePay, Stripe, PayPal, etc.
+  payload         Json
+  headers         Json?
+  externalEventId String?   @map("external_event_id")
+  transactionId   String?   @map("transaction_id")
+  status          String // Pending, Processed, Failed, Ignored
+  errorMessage    String?   @map("error_message")
+  receivedAt      DateTime  @default(now()) @map("received_at")
+  attempts        Int       @default(0)
+  nextRetryAt     DateTime? @map("next_retry_at")
+  processedAt     DateTime? @map("processed_at")
+  projectId       String    @map("project_id")
+  project         Project   @relation(fields: [projectId], references: [id])
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+
+  @@unique([provider, externalEventId])
+  @@index([status, nextRetryAt, attempts])
+  @@map("webhook_events")
+}
+
+model WebhookDeliveryLog {
+  id            String      @id @default(cuid())
+  transactionId String      @map("transaction_id")
+  projectId     String      @map("project_id")
+  eventType     String      @map("event_type")
+  url           String
+  payload       Json
+  statusCode    Int?        @map("status_code")
+  responseBody  String?     @map("response_body") @db.Text
+  errorMessage  String?     @map("error_message") @db.Text
+  durationInMs  Int         @map("duration_in_ms")
+  success       Boolean
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  project       Project     @relation(fields: [projectId], references: [id])
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@index([transactionId])
+  @@index([projectId])
+  @@index([success, createdAt])
+  @@map("webhook_delivery_logs")
+}
+
+model AdminAudit {
+  id         String   @id @default(cuid())
+  action     String // CREATE, UPDATE, DELETE, READ, LOGIN
+  resource   String // Projects, Transactions, Credentials, etc.
+  resourceId String   @map("resource_id")
+  oldData    Json?    @map("old_data")
+  newData    Json?    @map("new_data")
+  adminId    String   @map("admin_id")
+  admin      Admin    @relation(fields: [adminId], references: [id])
+  ipAddress  String   @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([adminId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+  @@map("admin_audits")
+}

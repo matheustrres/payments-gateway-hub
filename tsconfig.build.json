@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "declaration": false,
+    "sourceMap": false,
+    "removeComments": true
+  },
+  "exclude": ["./node_modules", "./tests"]
+}
