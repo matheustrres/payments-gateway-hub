@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1126" viewBox="0 0 1200 1126" role="img" aria-labelledby="t d">
+<title id="t">Payments Gateway Hub: payment flow</title>
+<desc id="d">Three flows: A) synchronous charge creation through the orchestrator to Asaas or AbacatePay; B) inbound provider webhooks verified, normalized, deduplicated and applied with retry; C) outbound signed notifications delivered from SQS to the project webhook URL with DLQ on failure.</desc>
+<defs>
+<marker id="ah-cf222e" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cf222e"/></marker>
+<marker id="ah-bc4c00" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#bc4c00"/></marker>
+<marker id="ah-1a7f37" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1a7f37"/></marker>
+<marker id="ah-0969da" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0969da"/></marker>
+</defs>
+<rect x="0.75" y="0.75" width="1198.5" height="1124.5" rx="18" fill="#ffffff" stroke="#d0d7de" stroke-width="1.5"/>
+<text x="44" y="52" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="27" font-weight="800" fill="#1f2328" text-anchor="start">Payments Gateway Hub</text>
+<text x="44" y="80" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14.5" font-weight="400" fill="#57606a" text-anchor="start">How a payment moves through the hub: charge creation, provider webhooks, and signed notifications back to your app.</text>
+<rect x="24" y="104" width="1152" height="300" rx="14" fill="#f3f9ff" stroke="#b6e3ff" stroke-width="1.5"/>
+<rect x="44" y="120" width="26" height="26" rx="7" fill="#0969da"/>
+<text x="57" y="138.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">A</text>
+<text x="82" y="140" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2328">Create a charge<tspan dx="16" font-size="13.5" font-weight="400" fill="#57606a">synchronous  ·  POST /charges</tspan></text>
+<rect x="44" y="166" width="192" height="150" rx="10" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="226" y="184" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#57606a" text-anchor="end" font-style="italic">external</text>
+<circle cx="58" cy="166" r="11" fill="#0969da"/>
+<text x="58" y="170.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="60" y="200" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Internal app</text>
+<text x="60" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">POST /charges</text>
+<text x="60" y="248" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">x-api-key header</text>
+<text x="60" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">PIX · BOLETO · CARD</text>
+<text x="60" y="292" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">+ idempotencyKey</text>
+<rect x="274" y="166" width="192" height="150" rx="10" fill="#ffffff" stroke="#54aeff" stroke-width="1.8"/>
+<circle cx="288" cy="166" r="11" fill="#0969da"/>
+<text x="288" y="170.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="290" y="200" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Auth + idempotency</text>
+<text x="290" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">API key → project</text>
+<text x="290" y="248" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Known key → stored tx</text>
+<text x="290" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">New → save as PENDING</text>
+<rect x="504" y="166" width="192" height="150" rx="10" fill="#ffffff" stroke="#54aeff" stroke-width="1.8"/>
+<circle cx="518" cy="166" r="11" fill="#0969da"/>
+<text x="518" y="170.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="520" y="200" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Provider credentials</text>
+<text x="520" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Per project + environment</text>
+<text x="520" y="248" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">AES-256-GCM at rest</text>
+<text x="520" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Decrypted in memory</text>
+<rect x="734" y="166" width="192" height="150" rx="10" fill="#ffffff" stroke="#54aeff" stroke-width="1.8"/>
+<circle cx="748" cy="166" r="11" fill="#0969da"/>
+<text x="748" y="170.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="750" y="200" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Orchestrator</text>
+<text x="750" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">PIX → AbacatePay</text>
+<text x="750" y="248" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">BOLETO / CARD → Asaas</text>
+<text x="750" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Adapters behind a port</text>
+<rect x="964" y="166" width="192" height="150" rx="10" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="1146" y="184" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#57606a" text-anchor="end" font-style="italic">external</text>
+<circle cx="978" cy="166" r="11" fill="#0969da"/>
+<text x="978" y="170.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="980" y="200" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Provider API</text>
+<text x="980" y="226" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Sandbox or live URL</text>
+<text x="980" y="248" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Returns externalId,</text>
+<text x="980" y="270" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">status and payment URL</text>
+<line x1="241" y1="241" x2="269" y2="241" stroke="#0969da" stroke-width="2" marker-end="url(#ah-0969da)"/>
+<line x1="471" y1="241" x2="499" y2="241" stroke="#0969da" stroke-width="2" marker-end="url(#ah-0969da)"/>
+<line x1="701" y1="241" x2="729" y2="241" stroke="#0969da" stroke-width="2" marker-end="url(#ah-0969da)"/>
+<line x1="931" y1="241" x2="959" y2="241" stroke="#0969da" stroke-width="2" marker-end="url(#ah-0969da)"/>
+<path d="M 1060.0 317 V 342 H 140.0 V 322" fill="none" stroke="#0969da" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah-0969da)"/>
+<text x="600.0" y="334" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#0969da" text-anchor="middle">hub saves externalId · status · paymentUrl + history, then responds 201 {transaction}</text>
+<text x="600.0" y="362" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#57606a" text-anchor="middle">already PAID? enqueue a notification (flow C)</text>
+<text x="274" y="388" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#cf222e" text-anchor="start">Gateway error → transaction FAILED (history kept); the same idempotencyKey can retry.</text>
+<rect x="24" y="424" width="1152" height="272" rx="14" fill="#f2fbf4" stroke="#aceebb" stroke-width="1.5"/>
+<rect x="44" y="440" width="26" height="26" rx="7" fill="#1a7f37"/>
+<text x="57" y="458.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">B</text>
+<text x="82" y="460" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2328">Provider webhook<tspan dx="16" font-size="13.5" font-weight="400" fill="#57606a">inbound  ·  POST /webhooks/inbound/:projectId/:provider</tspan></text>
+<rect x="44" y="486" width="192" height="150" rx="10" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="226" y="504" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#57606a" text-anchor="end" font-style="italic">external</text>
+<circle cx="58" cy="486" r="11" fill="#1a7f37"/>
+<text x="58" y="490.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="60" y="520" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Provider</text>
+<text x="60" y="546" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Asaas or AbacatePay</text>
+<text x="60" y="568" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">reports a payment</text>
+<text x="60" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">status change</text>
+<rect x="274" y="486" width="192" height="150" rx="10" fill="#ffffff" stroke="#4ac26b" stroke-width="1.8"/>
+<circle cx="288" cy="486" r="11" fill="#1a7f37"/>
+<text x="288" y="490.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="290" y="520" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Verify authenticity</text>
+<text x="290" y="546" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Asaas: token header</text>
+<text x="290" y="568" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">AbacatePay: secret +</text>
+<text x="290" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">HMAC signature</text>
+<text x="290" y="612" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">vs the project's secret</text>
+<rect x="504" y="486" width="192" height="150" rx="10" fill="#ffffff" stroke="#4ac26b" stroke-width="1.8"/>
+<circle cx="518" cy="486" r="11" fill="#1a7f37"/>
+<text x="518" y="490.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="520" y="520" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Persist + normalize</text>
+<text x="520" y="546" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Save event as PENDING</text>
+<text x="520" y="568" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Parser → common event</text>
+<text x="520" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Unsupported → IGNORED</text>
+<rect x="734" y="486" width="192" height="150" rx="10" fill="#ffffff" stroke="#4ac26b" stroke-width="1.8"/>
+<circle cx="748" cy="486" r="11" fill="#1a7f37"/>
+<text x="748" y="490.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="750" y="520" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Dedupe + guard</text>
+<text x="750" y="546" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Unique (provider, eventId)</text>
+<text x="750" y="568" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">PAID never goes back to</text>
+<text x="750" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">PENDING, FAILED or</text>
+<text x="750" y="612" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">EXPIRED</text>
+<rect x="964" y="486" width="192" height="150" rx="10" fill="#ffffff" stroke="#4ac26b" stroke-width="1.8"/>
+<circle cx="978" cy="486" r="11" fill="#1a7f37"/>
+<text x="978" y="490.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="980" y="520" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Apply + notify</text>
+<text x="980" y="546" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Update status + history</text>
+<text x="980" y="568" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Enqueue on SQS → flow C</text>
+<text x="980" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Event → PROCESSED</text>
+<line x1="241" y1="561" x2="269" y2="561" stroke="#1a7f37" stroke-width="2" marker-end="url(#ah-1a7f37)"/>
+<line x1="471" y1="561" x2="499" y2="561" stroke="#1a7f37" stroke-width="2" marker-end="url(#ah-1a7f37)"/>
+<line x1="701" y1="561" x2="729" y2="561" stroke="#1a7f37" stroke-width="2" marker-end="url(#ah-1a7f37)"/>
+<line x1="931" y1="561" x2="959" y2="561" stroke="#1a7f37" stroke-width="2" marker-end="url(#ah-1a7f37)"/>
+<path d="M 1060.0 637 V 662 H 600.0 V 642" fill="none" stroke="#cf222e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah-cf222e)"/>
+<text x="830.0" y="654" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#cf222e" text-anchor="middle">retry in 2^n min  ·  cron every minute</text>
+<text x="830.0" y="682" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#57606a" text-anchor="middle">processing error → attempts + 1 → FAILED after 5 tries</text>
+<rect x="24" y="716" width="1152" height="292" rx="14" fill="#fff8f1" stroke="#ffd8b5" stroke-width="1.5"/>
+<rect x="44" y="732" width="26" height="26" rx="7" fill="#bc4c00"/>
+<text x="57" y="750.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="800" fill="#ffffff" text-anchor="middle">C</text>
+<text x="82" y="752" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2328">Notify your app<tspan dx="16" font-size="13.5" font-weight="400" fill="#57606a">outbound  ·  SQS → your webhookUrl</tspan></text>
+<rect x="44" y="778" width="192" height="150" rx="10" fill="#ffffff" stroke="#fb8f44" stroke-width="1.8"/>
+<circle cx="58" cy="778" r="11" fill="#bc4c00"/>
+<text x="58" y="782.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="60" y="812" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">SQS queue</text>
+<text x="60" y="838" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Message carries</text>
+<text x="60" y="860" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">transactionId, projectId,</text>
+<text x="60" y="882" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">fromStatus (from A and B)</text>
+<rect x="274" y="778" width="192" height="150" rx="10" fill="#ffffff" stroke="#fb8f44" stroke-width="1.8"/>
+<circle cx="288" cy="778" r="11" fill="#bc4c00"/>
+<text x="288" y="782.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="290" y="812" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Consumer</text>
+<text x="290" y="838" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Long poll, 1 message</text>
+<text x="290" y="860" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Loads tx + project</text>
+<text x="290" y="882" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">No webhookUrl → discard</text>
+<rect x="504" y="778" width="192" height="150" rx="10" fill="#ffffff" stroke="#fb8f44" stroke-width="1.8"/>
+<circle cx="518" cy="778" r="11" fill="#bc4c00"/>
+<text x="518" y="782.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="520" y="812" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Build + sign</text>
+<text x="520" y="838" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Event: transaction.paid,</text>
+<text x="520" y="860" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">refunded, expired, failed</text>
+<text x="520" y="882" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">Header x-hub-signature</text>
+<text x="520" y="904" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">(HMAC-SHA256)</text>
+<rect x="734" y="778" width="192" height="150" rx="10" fill="#f6f8fa" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="916" y="796" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#57606a" text-anchor="end" font-style="italic">external</text>
+<circle cx="748" cy="778" r="11" fill="#bc4c00"/>
+<text x="748" y="782.2" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="750" y="812" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#1f2328" text-anchor="start">Your app</text>
+<text x="750" y="838" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">POST project.webhookUrl</text>
+<text x="750" y="860" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">5 s timeout</text>
+<text x="750" y="882" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" font-weight="400" fill="#3d444d" text-anchor="start">X-Event-Id header</text>
+<line x1="241" y1="853" x2="269" y2="853" stroke="#bc4c00" stroke-width="2" marker-end="url(#ah-bc4c00)"/>
+<line x1="471" y1="853" x2="499" y2="853" stroke="#bc4c00" stroke-width="2" marker-end="url(#ah-bc4c00)"/>
+<line x1="701" y1="853" x2="729" y2="853" stroke="#bc4c00" stroke-width="2" marker-end="url(#ah-bc4c00)"/>
+<rect x="964" y="778" width="192" height="70" rx="10" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.8"/>
+<text x="978" y="802" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14.5" font-weight="700" fill="#1a7f37" text-anchor="start">2xx → done</text>
+<text x="978" y="821" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#3d444d" text-anchor="start">Delete message</text>
+<text x="978" y="838" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#3d444d" text-anchor="start">Log delivery result</text>
+<rect x="964" y="858" width="192" height="70" rx="10" fill="#ffebe9" stroke="#ff8182" stroke-width="1.8"/>
+<text x="978" y="882" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14.5" font-weight="700" fill="#cf222e" text-anchor="start">Error / timeout</text>
+<text x="978" y="901" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#3d444d" text-anchor="start">Redelivered, then DLQ</text>
+<text x="978" y="918" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#3d444d" text-anchor="start">Monitor logs discard</text>
+<line x1="931" y1="853" x2="945.0" y2="853" stroke="#bc4c00" stroke-width="2"/>
+<line x1="945.0" y1="813.0" x2="945.0" y2="893.0" stroke="#bc4c00" stroke-width="2"/>
+<line x1="945.0" y1="813.0" x2="959" y2="813.0" stroke="#1a7f37" stroke-width="2" marker-end="url(#ah-1a7f37)"/>
+<line x1="945.0" y1="893.0" x2="959" y2="893.0" stroke="#cf222e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ah-cf222e)"/>
+<text x="44" y="964" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#57606a" text-anchor="start">At-least-once delivery: dedupe on X-Event-Id (the SQS MessageId, stable across redeliveries).</text>
+<text x="44" y="984" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#57606a" text-anchor="start">Verify x-hub-signature = HMAC-SHA256(rawBody, sha256(project live API key)).</text>
+<rect x="24" y="1028" width="1152" height="74" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+<text x="44" y="1058" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2328"><tspan font-weight="700">PostgreSQL</tspan><tspan dx="12" fill="#57606a">projects · provider_credentials · transactions · transaction_history · webhook_events · webhook_delivery_logs · admin_audits</tspan></text>
+<text x="44" y="1082" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" fill="#1f2328"><tspan font-weight="700">AWS SQS</tspan><tspan dx="12" fill="#57606a">outbound queue + dead-letter queue</tspan><tspan dx="36" font-weight="700">Cron</tspan><tspan dx="12" fill="#57606a">retry inbound events (every minute) · prune old logs (daily, 03:00)</tspan></text>
+</svg>
