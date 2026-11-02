@@ -19,7 +19,7 @@ Your apps talk to **one** API. The hub owns provider credentials, picks the righ
 
 ## How it works
 
-![Payments Gateway Hub flow: A) create a charge, B) provider webhook, C) notify your app](docs/payment-flow.png)
+![Payments Gateway Hub flow: A) create a charge, B) provider webhook, C) notify your app](docs/payment-flow.svg)
 
 1. **Create a charge (synchronous).** The app calls `POST /charges` with its project API key. The hub authenticates, checks idempotency, saves the transaction as `PENDING` **before** calling anything external, decrypts the project's provider credentials, and lets the orchestrator route by payment method (`PIX` → AbacatePay, `BOLETO` / `CREDIT_CARD` → Asaas). The result is stored and returned with the payment URL.
 2. **Provider webhook (inbound).** The provider reports a status change to `POST /webhooks/inbound/:projectId/:provider`. The hub verifies the request, persists the raw event, normalizes it, drops duplicates and stale transitions, updates the transaction and enqueues a notification. Processing errors are retried with exponential backoff.
@@ -422,7 +422,7 @@ Seus apps falam com **uma** API. O hub guarda as credenciais dos provedores, esc
 
 ### Como funciona
 
-![Fluxo do Payments Gateway Hub: A) criar cobrança, B) webhook do provedor, C) notificar seu app](docs/payment-flow.png)
+![Fluxo do Payments Gateway Hub: A) criar cobrança, B) webhook do provedor, C) notificar seu app](docs/payment-flow.svg)
 
 *Os rótulos do diagrama estão em inglês.*
 
